@@ -7,7 +7,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from datasets import load_dataset
 import pandas as pd
 import json
-import ssl
 import requests
 from huggingface_hub import login
 
@@ -66,9 +65,9 @@ if data_source == "Hugging Face Repo":
             if bypass_ssl:
                 # Disable SSL verification (use with caution in secure environments)
                 requests.packages.urllib3.disable_warnings()
-                dataset = load_dataset(dataset_name, use_auth_token=hf_token if hf_token else None, verify_ssl=False)
+                dataset = load_dataset(dataset_name, token=hf_token if hf_token else None, verify_ssl=False)
             else:
-                dataset = load_dataset(dataset_name, use_auth_token=hf_token if hf_token else None)
+                dataset = load_dataset(dataset_name, token=hf_token if hf_token else None)
 
             st.sidebar.success(f"Loaded dataset: {dataset_name}")
         except Exception as e:
@@ -221,4 +220,4 @@ if os.path.exists("./finetuned_model"):
 
 # Footer
 st.markdown("---")
-st.write("Built with ❤️ by FinetuningLabs | Powered by ValonyLabs")
+st.write("Built with ❤️ by Valony Labs | Powered by xAI's Grok 3")
