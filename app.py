@@ -4,17 +4,19 @@ import os
 import subprocess
 import shutil
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from datasets import load_dataset, DownloadConfig
+from datasets import load_dataset
 import pandas as pd
 import json
 import ssl
 import requests
+from huggingface_hub import login
 
 # Custom CSS for TW Cen MT font with fallback (including sidebar)
 custom_css = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Twentieth+Century:wght@400;700&display=swap');
-body, h1, h2, h3, p, label, .stTextInput, .stSelectbox, .stRadio, .stFileUploader, .stButton, .stDownloadButton, .sidebar .sidebar-content {
+body, h1, h2, h3, p, label, .stTextInput, .stSelectbox, .stRadio, .stFileUploader, .stButton, .stDownloadButton, 
+.sidebar .sidebar-content, .sidebar .sidebar-header, .sidebar .sidebar-item, .sidebar .sidebar-menu {
     font-family: 'Twentieth Century', Arial, Helvetica, sans-serif !important;
 }
 h1 {
@@ -38,14 +40,14 @@ model_options = [
     "HuggingFaceTB/SmolLM2-360M-Instruct",
     "HuggingFaceTB/SmolLM2-1.7B-Instruct"
 ]
-selected_model = st.sidebar.selectbox("Select Model to Finetune", model_options)
+selected_model = st.sidebar.selectbox("Select Model to Finetune", model_options, key="model_select")
 
 # Framework selection
 framework_options = ["Tutorial (Hugging Face)", "Unsloth", "Axolotl"]
-selected_framework = st.sidebar.radio("Select Finetuning Framework", framework_options)
+selected_framework = st.sidebar.radio("Select Finetuning Framework", framework_options, key="framework_radio")
 
 # Dataset source selection
-data_source = st.sidebar.radio("Dataset Source", ["Hugging Face Repo", "Upload File"])
+data_source = st.sidebar.radio("Dataset Source", ["Hugging Face Repo", "Upload File"], key="data_source_radio")
 
 # Dataset input based on source
 dataset = None
@@ -56,15 +58,18 @@ if data_source == "Hugging Face Repo":
 
     if dataset_name:
         try:
-            # Configure download settings
-            download_config = DownloadConfig(use_auth_token=hf_token if hf_token else None)
+            # Log in to Hugging Face Hub if token is provided
+            if hf_token:
+                login(token=hf_token)
+
+            # Load dataset with optional token for authentication
             if bypass_ssl:
                 # Disable SSL verification (use with caution in secure environments)
                 requests.packages.urllib3.disable_warnings()
-                download_config.session = requests.Session()
-                download_config.session.verify = False
+                dataset = load_dataset(dataset_name, use_auth_token=hf_token if hf_token else None, verify_ssl=False)
+            else:
+                dataset = load_dataset(dataset_name, use_auth_token=hf_token if hf_token else None)
 
-            dataset = load_dataset(dataset_name, download_config=download_config)
             st.sidebar.success(f"Loaded dataset: {dataset_name}")
         except Exception as e:
             st.sidebar.error(f"Error loading dataset: {e}")
@@ -216,4 +221,4 @@ if os.path.exists("./finetuned_model"):
 
 # Footer
 st.markdown("---")
-st.write("Built with ❤️ by Finetuning Labs | Powered by ValonyLabs")
+st.write("Built with ❤️ by FinetuningLabs | Powered by ValonyLabs")
