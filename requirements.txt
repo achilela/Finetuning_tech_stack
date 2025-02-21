@@ -1,9 +1,7 @@
-streamlit
-transformers
-datasets
-torch
-pandas
-huggingface_hub
-requests
-torchvision
-torchaudio
+streamlit>=1.30.0
+transformers==4.40.0
+datasets==2.16.0
+torch==2.2.0  # Use torch==2.2.0+cu121 for GPU with CUDA 12.1, or adjust for your system
+pandas==2.0.0
+huggingface_hub==0.20.0
+requests==2.31.0
